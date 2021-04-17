@@ -21,13 +21,15 @@ def show_map(ll_spn=None, map_type="map", add_params=None, size=(600, 450)):
         sys.exit(1)
 
     # Запишем полученное изображение в файл.
-    map_file = "map.png"
+    map_file = '../static/img/map.png'
     try:
         with open(map_file, "wb") as file:
             file.write(response.content)
     except IOError as ex:
         print("Ошибка записи временного файла:", ex)
         sys.exit(2)
+
+    return map_file
 
     # Инициализируем pygame
     pygame.init()
@@ -150,8 +152,8 @@ def find_business(ll, spn, request, locale="ru_RU"):
         return orgs[0]
 
 
-def main(organ):
-    toponym_to_find = " ".join(sys.argv[1:])
+def main(organ, address):
+    toponym_to_find = address
 
     if not toponym_to_find:
         print('No data')
@@ -160,7 +162,7 @@ def main(organ):
     lat, lon = get_coordinates(toponym_to_find)
     address_ll = f"{lat},{lon}"
 
-    # Подбираем масштаб, чтобы получить минимум 6 организаций.
+    # Подбираем масштаб, чтобы получить минимум n организаций.
     delta = 0.01
     organizations = []
     while delta < 100 and len(organizations) < 6:
@@ -187,8 +189,8 @@ def main(organ):
         for point, is_24x7 in organs_with_time])
 
     # Используем автопозиционирование карты по всем меткам.
-    show_map(map_type="map", add_params=points_param)
+    return show_map(map_type="map", add_params=points_param)
 
 
 if __name__ == "__main__":
-    main('аптека')
+    main('аптека', 'Псков ПТЛ')

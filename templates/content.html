@@ -11,8 +11,9 @@
           Тип организации
         </button>
         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-          <li><a class="dropdown-item" href="#">Аптека</a></li>
-          <li><a class="dropdown-item" href="#">Продуктовый</a></li>
+          {% for item in organs %}
+            <li><a class="dropdown-item" href="#">{{item}}</a></li>
+          {% endfor %}
         </ul>
     </div>
   </div>
@@ -22,8 +23,9 @@
         Наименование организации
       </button>
       <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-        <li><a class="dropdown-item" href="#">Будь Здоров!</a></li>
-        <li><a class="dropdown-item" href="#">Аптека-А</a></li>
+          {% for item in names_of_organs %}
+            <li><a class="dropdown-item" href="#">{{item}}</a></li>
+          {% endfor %}
       </ul>
     </div>
   </div>
@@ -46,5 +48,6 @@
   </div>
 </div>
 </div>
+<img src="../static/img/map.png" alt="Расположение ближайших организаций" />
 
 {% endblock %}

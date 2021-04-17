@@ -3,6 +3,7 @@ from werkzeug.utils import redirect
 from data.models import User
 from data.forms import RegisterForm
 from data import db_session
+from data import search
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -16,7 +17,18 @@ def not_found(_):
 @app.route('/')
 def index():
     db_sess = db_session.create_session()
-    return render_template('main.html')
+    sp = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
+          'Продуктовый': ['Пятёрочка', 'Магнит']}
+    organs = ['Аптека', 'Продуктовый']
+    names_of_organs = sp[organs[0]]  # Названия выбранного типа организации
+    address = 'Псков ПТЛ'
+    search.main(organs[0], address)  # Путь до изображения карты НЕ УБИРАТЬ ВЫЗОВ ФУНКЦИИ!!!
+    params = {
+        'organs': organs,
+        'address': address,
+        'names_of_organs': names_of_organs
+    }
+    return render_template('content.html', **params)
 
 
 @app.route('/registration', methods=['GET', 'POST'])
