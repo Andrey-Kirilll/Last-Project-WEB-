@@ -4,7 +4,7 @@ import sys
 import os
 
 
-def show_map(ll_spn=None, map_type="map", add_params=None):
+def show_map(ll_spn=None, map_type="map", add_params=None, size=(600, 450)):
     if ll_spn:
         map_request = f"http://static-maps.yandex.ru/1.x/?{ll_spn}&l={map_type}"
     else:
@@ -31,7 +31,7 @@ def show_map(ll_spn=None, map_type="map", add_params=None):
 
     # Инициализируем pygame
     pygame.init()
-    screen = pygame.display.set_mode((600, 450))
+    screen = pygame.display.set_mode(size)
     # Рисуем картинку, загружаемую из только что созданного файла.
     screen.blit(pygame.image.load(map_file), (0, 0))
     # Переключаем экран и ждем закрытия окна.
@@ -160,16 +160,16 @@ def main(organ):
     lat, lon = get_coordinates(toponym_to_find)
     address_ll = f"{lat},{lon}"
 
-    # Подбираем масштаб, чтобы получить минимум 10 аптек.
+    # Подбираем масштаб, чтобы получить минимум 6 организаций.
     delta = 0.01
     organizations = []
-    while delta < 100 and len(organizations) < 10:
+    while delta < 100 and len(organizations) < 6:
         delta *= 2.0
         span = f"{delta},{delta}"
         organizations = find_businesses(address_ll, span, organ)
 
-    # Формируем список из координат аптек и их круглосуточности
-    farmacies_with_time = []
+    # Формируем список из координат организаций и их круглосуточности
+    organs_with_time = []
     for org in organizations:
         point = org["geometry"]["coordinates"]
         hours = org["properties"]["CompanyMetaData"].get("Hours", None)
@@ -179,16 +179,16 @@ def main(organ):
         else:  # Данных о времени работы нет.
             is_24x7 = None
         # Запоминаем полученные данные.
-        farmacies_with_time.append((point, is_24x7))
+        organs_with_time.append((point, is_24x7))
 
     # Формируем параметр с точками
     points_param = "pt=" + "~".join([
         f'{point[0]},{point[1]},pm2{"gn" if is_24x7 else ("lb" if not is_24x7 else "gr")}l'
-        for point, is_24x7 in farmacies_with_time])
+        for point, is_24x7 in organs_with_time])
 
     # Используем автопозиционирование карты по всем меткам.
     show_map(map_type="map", add_params=points_param)
 
 
 if __name__ == "__main__":
-    main('пятёрочка')
+    main('аптека')

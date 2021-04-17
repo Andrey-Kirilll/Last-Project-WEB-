@@ -3,7 +3,7 @@ import sqlalchemy
 from flask_login import UserMixin
 from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from wfe.data.db_session import SqlAlchemyBase
+from data.db_session import SqlAlchemyBase
 
 
 class User(UserMixin, SerializerMixin, SqlAlchemyBase):
