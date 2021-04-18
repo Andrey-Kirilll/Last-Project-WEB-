@@ -25,3 +25,7 @@ h1 {
 .row {
     margin-top: 20px;
 }
+
+#user {
+    margin-left: 60%;
+}

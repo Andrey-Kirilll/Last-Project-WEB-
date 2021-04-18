@@ -2,23 +2,30 @@
 
 {% block table %}
 
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">№</th>
-      <th scope="col">Товар</th>
-      <th scope="col">Цена</th>
-      <th scope="col">Количество</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Mark</td>
-      <td>Otto</td>
-      <td>@mdo</td>
-    </tr>
-  </tbody>
-</table>
+  {% for store in stores %}
+    <h3>{{store[name]}}, по адрессу: {{store{address}}}</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">№</th>
+          <th scope="col">Категория</th>
+          <th scope="col">Товар</th>
+          <th scope="col">Цена</th>
+          <th scope="col">Количество</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for item in store[items] %}
+        {% for prod in item[0] %}
+            <tr>
+              <th scope="row">1</th>
+              <td>Mark</td>
+            </tr>
+        {% endfor %}
+      {% endfor %}
+      </tbody>
+    </table>
+
+  {% endfor %}
 
 {% endblock %}

@@ -45,13 +45,13 @@ class Resources(SqlAlchemyBase, SerializerMixin):
 
     __tablename__ = 'all_items'
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    appellation = sqlalchemy.Column(sqlalchemy.String, nullable=True, unique=True)
-    type = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    price = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
-    count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
-    in_store = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    store_address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)  # id товара
+    appellation = sqlalchemy.Column(sqlalchemy.String, nullable=True, unique=True)  # наименование товара
+    type = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # категория товара (например, молоко)
+    price = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)  # цена товара
+    count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)  # количество товара
+    in_store = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # магазин, где находится товар
+    store_address = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # адрес товара
     #administrator_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("administrators.id"), nullable=True)
     created_datetime = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
 

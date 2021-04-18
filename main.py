@@ -20,10 +20,9 @@ def load_user(user_id):
 
 
 @app.route('/logout')
-@login_required
 def logout():
     logout_user()
-    return redirect("/")
+    return redirect('/')
 
 
 @app.errorhandler(404)
@@ -69,6 +68,18 @@ def registration():
         db_sess.commit()
         return redirect('/login')
     return render_template('registration.html', title='Регистрация', form=form)
+
+
+@app.route('/table')
+def load_table():
+    store1 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
+              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
+                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'], ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
+    store2 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
+              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
+                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'], ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
+    stores = [store1, store2]
+    return render_template('table.html', stores)
 
 
 @app.route('/login', methods=['GET', 'POST'])
