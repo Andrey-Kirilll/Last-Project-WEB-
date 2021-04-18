@@ -1,15 +1,16 @@
 import datetime
 import sqlalchemy
 from flask_login import UserMixin
+from sqlalchemy import orm
 from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from data.db_session import SqlAlchemyBase
 
 
-class User(UserMixin, SerializerMixin, SqlAlchemyBase):
-    __tablename__ = 'users'
+class BaseModelForAdminAndUser(UserMixin, SerializerMixin, SqlAlchemyBase):
+    __abstract__ = True
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, unique=True, primary_key=True, autoincrement=True)
     surname = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
@@ -21,3 +22,37 @@ class User(UserMixin, SerializerMixin, SqlAlchemyBase):
 
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password)
+
+
+class User(BaseModelForAdminAndUser):
+
+    __tablename__ = 'users'
+
+
+class Administrator(BaseModelForAdminAndUser):
+
+    __tablename__ = 'administrators'
+
+    #id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('all_items.administrator_id'), unique=True,
+                           #primary_key=True, autoincrement=True)
+    store_address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    store_name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+
+    #resources = orm.relationship('all_items', back_populates='administrator')
+
+
+class Resources(SqlAlchemyBase, SerializerMixin):
+
+    __tablename__ = 'all_items'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    appellation = sqlalchemy.Column(sqlalchemy.String, nullable=True, unique=True)
+    type = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    price = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    in_store = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    store_address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    #administrator_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("administrators.id"), nullable=True)
+    created_datetime = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
+
+    #administrator = orm.relationship('Administrator', back_populates='resources')

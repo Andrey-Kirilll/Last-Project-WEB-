@@ -1,12 +1,29 @@
 from flask import Flask, make_response, jsonify, render_template
+from flask_login import login_user, LoginManager, login_required, logout_user
 from werkzeug.utils import redirect
 from data.models import User
-from data.forms import RegisterForm
+from data.forms import RegisterForm, LoginForm
 from data import db_session
 from data import search
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    db_sess = db_session.create_session()
+    return db_sess.query(User).get(user_id)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
 
 
 @app.errorhandler(404)
@@ -50,12 +67,25 @@ def registration():
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
-        return redirect('/')
+        return redirect('/login')
     return render_template('registration.html', title='Регистрация', form=form)
 
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            return redirect("/")
+        return render_template('login.html', message="Wrong login or password", form=form)
+    return render_template('login.html', title='Authorization', form=form)
+
+
 def main():
-    db_session.global_init("db/example.db")
+    db_session.global_init("db/search_system.db")
     app.run()
 
 
