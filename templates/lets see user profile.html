@@ -1,0 +1,12 @@
+{% extends "main.html" %}
+
+{% block profile %}
+
+<h1>Редактирование профиля</h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+
+</form>
+
+{% endblock %}

@@ -50,7 +50,7 @@ class Resources(SqlAlchemyBase, SerializerMixin):
     type = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     price = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
-    in_store = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    store = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     store_address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     #administrator_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("administrators.id"), nullable=True)
     created_datetime = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
