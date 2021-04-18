@@ -1,9 +1,9 @@
-{% extends "main.html" %}
+{% extends "content.html" %}
 
 {% block table %}
 
   {% for store in stores %}
-    <h3>{{store[name]}}, по адрессу: {{store{address}}}</h3>
+    <h3>{{store[name]}}, по адрессу: {{store[address]}}</h3>
     <table class="table">
       <thead>
         <tr>
@@ -16,16 +16,20 @@
       </thead>
       <tbody>
       {% for item in store[items] %}
-        {% for prod in item[0] %}
-            <tr>
-              <th scope="row">1</th>
-              <td>Mark</td>
-            </tr>
+        {% for category in item %}
+          {% for product in category[1:] %}
+              <tr>
+                <th scope="row">{{ loop.parent.loop.index }}.{{ loop.index }}</th>
+                <td>{{ category[0] }}</td>
+                <td>{{ category[1][0] }}</td>
+                <td>{{ category[1][1] }}</td>
+                <td>{{ category[1][2] }}</td>
+              </tr>
+          {% endfor %}
         {% endfor %}
       {% endfor %}
       </tbody>
     </table>
-
   {% endfor %}
 
 {% endblock %}

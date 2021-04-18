@@ -47,6 +47,32 @@ def index():
     return render_template('content.html', **params)
 
 
+@app.route('/table')
+def load_table():
+    store1 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
+              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
+                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'], ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
+    store2 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 15',
+              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
+                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'], ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
+    stores = [store1, store2]
+
+    db_sess = db_session.create_session()
+    sp = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
+          'Продуктовый': ['Пятёрочка', 'Магнит']}
+    organs = ['Аптека', 'Продуктовый']
+    names_of_organs = sp[organs[0]]  # Названия выбранного типа организации
+    address = 'Псков ПТЛ'
+    search.main(organs[0], address)  # Путь до изображения карты НЕ УБИРАТЬ ВЫЗОВ ФУНКЦИИ!!!
+    params = {
+        'organs': organs,
+        'address': address,
+        'names_of_organs': names_of_organs,
+        "stores": stores
+    }
+    return render_template('content.html', **params)
+
+
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():
     form = RegisterForm()
@@ -68,18 +94,6 @@ def registration():
         db_sess.commit()
         return redirect('/login')
     return render_template('registration.html', title='Регистрация', form=form)
-
-
-@app.route('/table')
-def load_table():
-    store1 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
-              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
-                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'], ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
-    store2 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
-              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
-                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'], ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
-    stores = [store1, store2]
-    return render_template('table.html', stores)
 
 
 @app.route('/login', methods=['GET', 'POST'])

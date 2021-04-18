@@ -44,6 +44,38 @@
     <a class="btn btn-primary" href="/table" role="button">Поиск</a>
   </div>
 </div>
-<img id="map" src="../static/img/default.jpg" alt="Расположение ближайших организаций" />
+
+{% if stores %}
+<img id="map" src="../static/img/map.png" alt="Расположение ближайших организаций" />
+  {% for store in stores %}
+    <h3>{{store["name"]}}, по адрессу: {{store["address"]}}</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">№</th>
+          <th scope="col">Категория</th>
+          <th scope="col">Товар</th>
+          <th scope="col">Цена</th>
+          <th scope="col">Количество</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for item in store["items"] %}
+        {% set category = item[0] %}
+        {% set loop1 = loop.index %}
+        {% for product in item[1:] %}
+            <tr>
+              <th scope="row">{{ loop1 }}.{{ loop.index }}</th>
+              <td>{{ category }}</td>
+              <td>{{ product[0] }}</td>
+              <td>{{ product[1] }}</td>
+              <td>{{ product[2] }}</td>
+            </tr>
+        {% endfor %}
+      {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
+{% endif %}
 
 {% endblock %}
