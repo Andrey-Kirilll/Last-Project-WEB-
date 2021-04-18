@@ -21,10 +21,11 @@ def show_map(ll_spn=None, map_type="map", add_params=None, size=(600, 450)):
         sys.exit(1)
 
     # Запишем полученное изображение в файл.
-    map_file = '../static/img/map.png'
+    map_file = 'static/img/map.png'
     try:
         with open(map_file, "wb") as file:
             file.write(response.content)
+        file.close()
     except IOError as ex:
         print("Ошибка записи временного файла:", ex)
         sys.exit(2)
