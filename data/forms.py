@@ -5,23 +5,23 @@ from wtforms.validators import DataRequired
 
 
 class RegistrationForm(FlaskForm):
-    email = EmailField('Login / email', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    password_again = PasswordField('Repeat password', validators=[DataRequired()])
-    surname = StringField('Surname', validators=[DataRequired()])
-    name = StringField('Name', validators=[DataRequired()])
-    submit = SubmitField('Submit')
+    email = EmailField('Адрес электронной почты', validators=[DataRequired()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    password_again = PasswordField('Повторите пароль', validators=[DataRequired()])
+    surname = StringField('Фамилия', validators=[DataRequired()])
+    name = StringField('Имя', validators=[DataRequired()])
+    submit = SubmitField('Подтвердить')
 
 
 class LoginForm(FlaskForm):
-    email = EmailField('Login / email', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember me')
+    email = EmailField('Адрес электронной почты', validators=[DataRequired()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    remember_me = BooleanField('Запомнить меня')
     submit = SubmitField('Продолжить')
 
 
 class AddWork(RegistrationForm):
-    business = SelectMultipleField('Выберите тип организации', validators=[DataRequired()], coerce=str,
+    business = SelectMultipleField('Выберите название организации', validators=[DataRequired()], coerce=str,
                                    choices=[('Пятёрочка', 'Пятёрочка'), ('Магнит', 'Магнит'),
                                             ('Будь Здоров', 'Будь Здоров')])
     city = StringField('Введите название города', validators=[DataRequired()])
@@ -30,6 +30,36 @@ class AddWork(RegistrationForm):
 
 
 class RadioForm(FlaskForm):
-    type = RadioField('Who are u?', coerce=str, choices=[('1', 'User'), ('2', 'Administrator')], default='1',
+    type = RadioField('Кто вы?', coerce=str, choices=[('1', 'User'), ('2', 'Administrator')], default='1',
                       validators=[DataRequired()])
+    submit = SubmitField('Подтвердить')
+
+
+class UserProfileForm(FlaskForm):
+    email = EmailField('Адрес электронной почты', validators=[DataRequired()])
+    surname = StringField('Фамилия', validators=[DataRequired()])
+    name = StringField('Имя', validators=[DataRequired()])
+    submit = SubmitField('Сохранить')
+
+
+class DeleteButton(FlaskForm):
+    delete = SubmitField('Удалить текущего пользователя')
+
+
+class ChangePasswordForm(FlaskForm):
+    new_password = StringField('Введите новый пароль')
+    new_password_again = StringField('Повторите пароль')
+    button = SubmitField('Подтвердить')
+
+
+class AdminProfileForm(FlaskForm):
+    email = EmailField('Адрес электронной почты', validators=[DataRequired()])
+    surname = StringField('Фамилия', validators=[DataRequired()])
+    name = StringField('Имя', validators=[DataRequired()])
+    business = SelectMultipleField('Выберите тип организации', validators=[DataRequired()], coerce=str,
+                                   choices=[('Пятёрочка', 'Пятёрочка'), ('Магнит', 'Магнит'),
+                                            ('Будь Здоров', 'Будь Здоров')])
+    city = StringField('Введите название города', validators=[DataRequired()])
+    street = StringField('Введите название улицы', validators=[DataRequired()])
+    house = FloatField('Введите номер дома', validators=[DataRequired()])
     submit = SubmitField('Submit')

@@ -7,6 +7,41 @@
     {{ form.hidden_tag() }}
     {{ form.csrf_token }}
 
+    <p>
+        {{ form.email.label }}<br>
+        {{ form.email(class="form-control", type="email") }}<br>
+        {% for error in form.email.errors %}
+    <p class="alert alert-danger" role="alert">
+        {{ error }}
+    </p>
+    {% endfor %}
+
+    <p>
+        {{ form.surname.label }}<br>
+        {{ form.surname(class="form-control") }}<br>
+        {% for error in form.surname.errors %}
+    <p class="alert alert-danger" role="alert">
+        {{ error }}
+    </p>
+    {% endfor %}
+
+    <p>
+        {{ form.name.label }}<br>
+        {{ form.name(class="form-control") }}<br>
+        {% for error in form.name.errors %}
+    <p class="alert alert-danger" role="alert">
+        {{ error }}
+    </p>
+    {% endfor %}
+
+    <p>{{ form.submit(type="submit", class="btn btn-primary", value="Сохранить") }}</p>
+    {{ message }}
+</form>
+<form action="" method="post">
+    {{ form1.hidden_tag() }}
+    {{ form1.csrf_token }}
+    <p>{{ form1.delete(type="submit", class="btn btn-danger", value="Удалить текущего пользователя") }}</p>
+    {{ message }}
 </form>
 
 {% endblock %}

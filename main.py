@@ -1,8 +1,10 @@
-from flask import Flask, make_response, jsonify, render_template
+from flask import Flask, make_response, jsonify, render_template, request
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.utils import redirect
-from data.models import User, Administrator
-from data.forms import RegistrationForm, LoginForm, AddWork, RadioForm
+from data.models import People, Works
+from data.forms import RegistrationForm, LoginForm, AddWork, RadioForm, UserProfileForm, AdminProfileForm, DeleteButton, \
+    ChangePasswordForm
+from werkzeug.security import generate_password_hash
 from data import db_session
 from data import search
 
@@ -14,27 +16,65 @@ login_manager.init_app(app)
 
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(user_email):
     db_sess = db_session.create_session()
-    return db_sess.query(User).get(user_id)
+    return db_sess.query(People).get(user_email)
 
 
-@app.route('/profile', methods=['GET', 'POST'])
+@app.route('/profile', methods=['GET', 'POST', 'DELETE'])
 def on_profile():
     db_sess = db_session.create_session()
-    try:
-        user_info = db_sess.query(User).get(current_user.id)
-        print(user_info.name)
-    except Exception:
-        user_info = None
-        admin_info = db_sess.query(Administrator).get(current_user.id)
-    if user_info is not None:
-        return render_template('lets see user profile.html', user=user_info)
+    info = db_sess.query(People).filter_by(email=current_user.email)
+    info = [x.serialize for x in info.all()][0]
+    form_ = DeleteButton()
+    if info['role'] == 'User':
+        form = UserProfileForm()
+
+        if form.validate_on_submit():
+            db_sess.query(People).filter(People.email == current_user.email).update({"email": form.email.data,
+                                                                                     "surname": form.surname.data,
+                                                                                     "name": form.name.data})
+            db_sess.commit()
+            return redirect('/')
+        if form_.validate_on_submit():
+            db_sess.query(People).filter(People.email == current_user.email).delete()
+            db_sess.commit()
+            return redirect('/')
+        form.email.data = info['email']
+        form.surname.data = info['surname']
+        form.name.data = info['name']
+        return render_template('lets see user profile.html', form=form, form1=form_)
     else:
-        return render_template('', admin=admin_info)
+        form = AdminProfileForm()
+
+        if form.validate_on_submit():
+            db_sess.query(People).filter(People.email == current_user.email).update(
+                {"email": form.email.data,
+                 "surname": form.surname.data,
+                 "name": form.name.data})
+            db_sess.commit()
+            db_sess.query(Works).filter(Works.id == current_user.id).update({
+                "store_name": form.business.data,
+                "store_address": ','.join([form.city.data, form.street.data, form.house.data])})
+            db_sess.commit()
+            return redirect('/')
+        work = db_sess.query(Works).filter_by(id=current_user.id)
+        work = [x.serialize for x in work.all()]
+        print(work)
+        form.email.data = info['email']
+        form.surname.data = info['surname']
+        form.name.data = info['name']
+        form.business.data = work[0]['store_name']
+        address = work[0]['store_address'].split(',')
+        form.city.data = address[0]
+        form.street.data = address[1]
+        form.house.data = address[2]
+
+        return render_template('admin_registration.html', form=form, form1=form_)
 
 
 @app.route('/logout')
+@login_required
 def logout():
     logout_user()
     return redirect('/')
@@ -66,10 +106,12 @@ def index():
 def load_table():
     store1 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
               'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
-                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'], ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
+                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'],
+                         ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
     store2 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 15',
               'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
-                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'], ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
+                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'],
+                         ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
     stores = [store1, store2]
 
     db_sess = db_session.create_session()
@@ -96,7 +138,7 @@ def registration():
             return redirect('/user_registration')
         else:
             return redirect('/admin_registration')
-    return render_template('radio.html', title='Who are you?', form=form)
+    return render_template('radio.html', title='Кто Вы?', form=form)
 
 
 @app.route('/user_registration', methods=['GET', 'POST'])
@@ -104,16 +146,17 @@ def user_registration():
     form = RegistrationForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
-            return render_template('user_registration.html', title='Registration', form=form,
-                                   message="Passwords don't match")
+            return render_template('user_registration.html', title='Регистрация', form=form,
+                                   message="Пароли не совпадают")
         db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():
-            return render_template('user_registration.html', title='Registration', form=form,
-                                   message="This user already exists")
-        user = User(
+        if db_sess.query(People).filter(People.email == form.email.data).first():
+            return render_template('user_registration.html', title='Регистрация', form=form,
+                                   message="Такой пользователь уже существует")
+        user = People(
             name=form.name.data,
             surname=form.surname.data,
-            email=form.email.data
+            email=form.email.data,
+            role='User'
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -127,22 +170,27 @@ def admin_registration():
     form = AddWork()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
-            return render_template('admin_registration.html', title='Registration', form=form,
-                                   message="Passwords don't match")
+            return render_template('admin_registration.html', title='Регистрация', form=form,
+                                   message="Пароли не совпадают")
         db_sess = db_session.create_session()
-        if db_sess.query(Administrator).filter(Administrator.email == form.email.data).first():
-            return render_template('admin_registration.html', title='Registration', form=form,
-                                   message="This admin already exists")
-        admin = Administrator(
+        if db_sess.query(People).filter(People.email == form.email.data).first():
+            return render_template('admin_registration.html', title='Регистрация', form=form,
+                                   message="Такой администратор уже есть")
+        admin = People(
             name=form.name.data,
             surname=form.surname.data,
             email=form.email.data,
-            store_name=form.business.data[0],
-            store_address=','.join([form.city.data, form.street.data, str(form.house.data)])
-        )
+            role='Admin')
         admin.set_password(form.password.data)
         db_sess.add(admin)
         db_sess.commit()
+        work = Works(
+            store_name=form.business.data[0],
+            store_address=','.join([form.city.data, form.street.data, str(form.house.data)])
+        )
+        db_sess.add(work)
+        db_sess.commit()
+
         return redirect('/login')
     return render_template('admin_registration.html', title='Регистрация', form=form)
 
@@ -152,16 +200,27 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
-        admin = db_sess.query(Administrator).filter(Administrator.email == form.email.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember_me.data)
+        human = db_sess.query(People).filter(People.email == form.email.data).first()
+        if human and human.check_password(form.password.data):
+            login_user(human, remember=form.remember_me.data)
             return redirect("/")
-        elif admin and admin.check_password(form.password.data):
-            login_user(admin, remember=form.remember_me.data)
-            return redirect("/")
-        return render_template('login.html', message="Wrong login or password", form=form)
-    return render_template('login.html', title='Authorization', form=form)
+        return render_template('login.html', message="Неверный логин или пароль", form=form)
+    return render_template('login.html', title='Авторизация', form=form)
+
+
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        if form.new_password.data != form.new_password_again.data:
+            return render_template('change_password.html', title='Смена пароля', form=form,
+                                   message="Пароли не совпадают")
+        db_sess.query(People).filter(People.email == current_user.email).\
+            update({'hashed_password': generate_password_hash(form.new_password.data)})
+        db_sess.commit()
+        return redirect('/')
+    return render_template('change_password.html', title='Смена пароля', form=form)
 
 
 def main():
