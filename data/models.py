@@ -40,7 +40,7 @@ class Works(SqlAlchemyBase):
 
     __tablename__ = 'works'
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("people.id"), autoincrement=True, primary_key=True, unique=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, unique=True)
     store_address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     store_name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
 

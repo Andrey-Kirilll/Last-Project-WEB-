@@ -19,11 +19,20 @@
                       <div class="dropdown">
                         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                         {{ current_user.name }}</button>
+                        {% if current_user.role == "User" %}
                           <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             <li><a class="dropdown-item" href="/logout">Выход</a></li>
                             <li><a class="dropdown-item" href="/profile">Мой профиль</a></li>
                             <li><a class="dropdown-item" href="/change_password">Сменить пароль</a></li>
                           </ul>
+                        {% else %}
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <li><a class="dropdown-item" href="/logout">Выход</a></li>
+                            <li><a class="dropdown-item" href="/profile">Мой профиль</a></li>
+                            <li><a class="dropdown-item" href="/change_password">Сменить пароль</a></li>
+                            <li><a class="'dropdown-item" href="/add_item">Добавить продукт в список</a></li>
+                          </ul>
+                        {% endif %}
                       </div>
                   </li>
                 {% else %}
@@ -59,7 +68,10 @@
           {% block content %}
           {% endblock %}
 
-          {% block profile %}
+          {% block user_profile %}
+          {% endblock %}
+
+          {% block admin_profile %}
           {% endblock %}
 
           {% block change_password %}

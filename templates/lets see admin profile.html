@@ -1,6 +1,6 @@
 {% extends "main.html" %}
 
-{% block admin_registration %}
+{% block admin_profile %}
 <h1>{{ title }}</h1>
 
 <form action="" method="post">
@@ -10,24 +10,6 @@
         {{ form.email.label }}<br>
         {{ form.email(class="form-control", type="email") }}<br>
         {% for error in form.email.errors %}
-    <p class="alert alert-danger" role="alert">
-        {{ error }}
-    </p>
-    {% endfor %}
-
-    <p>
-        {{ form.password.label }}<br>
-        {{ form.password(class="form-control", type="password") }}<br>
-        {% for error in form.password.errors %}
-    <p class="alert alert-danger" role="alert">
-        {{ error }}
-    </p>
-    {% endfor %}
-
-    <p>
-        {{ form.password_again.label }}<br>
-        {{ form.password_again(class="form-control", type="password") }}<br>
-        {% for error in form.password_again.errors %}
     <p class="alert alert-danger" role="alert">
         {{ error }}
     </p>
@@ -74,6 +56,7 @@
         {{ form.street.label }}<br>
         {{ form.street(class="form-control") }}<br>
         {% for error in form.street.errors %}
+    </p>
     <p class="alert alert-danger" role="alert">
         {{ error }}
     </p>
@@ -84,12 +67,19 @@
         {{ form.house.label }}<br>
         {{ form.house(class="form-control") }}<br>
         {% for error in form.house.errors %}
+    </p>
 
     <p class="alert alert-danger" role="alert">
         {{ error }}
     </p>
     {% endfor %}
-    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary", value="Сохранить") }}</p>
     {{message}}
+</form>
+    <form action="" method="post">
+    {{ form1.hidden_tag() }}
+    {{ form1.csrf_token }}
+    <p>{{ form1.delete(type="submit", class="btn btn-danger", value="Удалить текущего пользователя") }}</p>
+    {{ message }}
 </form>
 {% endblock %}

@@ -43,34 +43,43 @@ def on_profile():
         form.email.data = info['email']
         form.surname.data = info['surname']
         form.name.data = info['name']
-        return render_template('lets see user profile.html', form=form, form1=form_)
+        return render_template('lets see user profile.html', form=form, form1=form_, title='Редактирование профиля')
     else:
         form = AdminProfileForm()
 
         if form.validate_on_submit():
+            try:
+                house = int(form.house.data)
+            except ValueError:
+                return render_template('lets see admin profile.html', form=form, form1=form_,
+                                       title='Редактирование профиля', message='Номер дома должен быть целым числом')
             db_sess.query(People).filter(People.email == current_user.email).update(
                 {"email": form.email.data,
                  "surname": form.surname.data,
                  "name": form.name.data})
-            db_sess.commit()
             db_sess.query(Works).filter(Works.id == current_user.id).update({
-                "store_name": form.business.data,
-                "store_address": ','.join([form.city.data, form.street.data, form.house.data])})
+                "store_name": form.business.data[0],
+                "store_address": ','.join([form.city.data, form.street.data, str(form.house.data).split('.')[0]])})
             db_sess.commit()
             return redirect('/')
+        if form_.validate_on_submit():
+            db_sess.query(Works).filter(Works.id == current_user.id).delete()
+            db_sess.query(People).filter(People.email == current_user.email).delete()
+            db_sess.commit()
+            return redirect('/')
+
         work = db_sess.query(Works).filter_by(id=current_user.id)
-        work = [x.serialize for x in work.all()]
-        print(work)
+        work = [x.serialize for x in work.all()][0]
         form.email.data = info['email']
         form.surname.data = info['surname']
         form.name.data = info['name']
-        form.business.data = work[0]['store_name']
-        address = work[0]['store_address'].split(',')
+        form.business.data = work['store_name']
+        address = work['store_address'].split(',')
         form.city.data = address[0]
         form.street.data = address[1]
         form.house.data = address[2]
 
-        return render_template('admin_registration.html', form=form, form1=form_)
+        return render_template('lets see admin profile.html', form=form, form1=form_, title='Редактирование профиля')
 
 
 @app.route('/logout')
@@ -175,7 +184,12 @@ def admin_registration():
         db_sess = db_session.create_session()
         if db_sess.query(People).filter(People.email == form.email.data).first():
             return render_template('admin_registration.html', title='Регистрация', form=form,
-                                   message="Такой администратор уже есть")
+                                   message="К этому адресу уже привязан аккаунт")
+        try:
+            house = int(form.house.data)
+        except ValueError:
+            return render_template('admin_registration.html', form=form,
+                                   title='Редактирование профиля', message='Номер дома должен быть целым числом')
         admin = People(
             name=form.name.data,
             surname=form.surname.data,
@@ -185,8 +199,9 @@ def admin_registration():
         db_sess.add(admin)
         db_sess.commit()
         work = Works(
+            id=int(db_sess.query(People.id).filter(People.email == form.email.data).first()[0]),
             store_name=form.business.data[0],
-            store_address=','.join([form.city.data, form.street.data, str(form.house.data)])
+            store_address=','.join([form.city.data, form.street.data, str(form.house.data).split('.')[0]])
         )
         db_sess.add(work)
         db_sess.commit()

@@ -26,7 +26,7 @@ class AddWork(RegistrationForm):
                                             ('Будь Здоров', 'Будь Здоров')])
     city = StringField('Введите название города', validators=[DataRequired()])
     street = StringField('Введите название улицы', validators=[DataRequired()])
-    house = FloatField('Введите номер дома', validators=[DataRequired()])
+    house = StringField('Введите номер дома', validators=[DataRequired()])
 
 
 class RadioForm(FlaskForm):
@@ -61,5 +61,5 @@ class AdminProfileForm(FlaskForm):
                                             ('Будь Здоров', 'Будь Здоров')])
     city = StringField('Введите название города', validators=[DataRequired()])
     street = StringField('Введите название улицы', validators=[DataRequired()])
-    house = FloatField('Введите номер дома', validators=[DataRequired()])
-    submit = SubmitField('Submit')
+    house = StringField('Введите номер дома', validators=[DataRequired()])
+    submit = SubmitField('Сохранить')
