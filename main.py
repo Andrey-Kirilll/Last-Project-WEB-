@@ -1,10 +1,11 @@
-from flask import Flask, make_response, jsonify, render_template
+from flask import Flask, make_response, jsonify, render_template, request
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.utils import redirect
 from data.models import User, Administrator
-from data.forms import RegistrationForm, LoginForm, AddWork, RadioForm
+from data.forms import RegistrationForm, LoginForm, AddWork, RadioForm, Search
 from data import db_session
 from data import search
+import json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -45,8 +46,17 @@ def not_found(_):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
+
+    #form = Search()
+    #if form.validate_on_submit():
+    #    city = form.city.data
+    #   street = form.street.data
+    #    house = form.house.data
+    #    return redirect('/table')
+
+
     db_sess = db_session.create_session()
     sp = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
           'Продуктовый': ['Пятёрочка', 'Магнит']}
@@ -59,11 +69,33 @@ def index():
         'address': address,
         'names_of_organs': names_of_organs
     }
+
+    if request.method == 'POST':
+        city = request.form.get('city')
+        street = request.form.get('street')
+        house = request.form.get('house')
+
+        params = [city, street, house]
+        print(params)
+
+        return redirect('/table')
+
     return render_template('content.html', **params)
 
 
-@app.route('/table')
+@app.route('/table', methods=['GET', 'POST'])
 def load_table():
+
+    city = request.args.get('city')
+    street = request.form.get('street')
+    house = request.form.get('house')
+
+    data = request.form
+    data_1 = request.data
+
+    params = [city, street, house]
+    print(params, data, data_1)
+
     store1 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
               'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
                         ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'], ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}

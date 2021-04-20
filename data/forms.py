@@ -33,3 +33,10 @@ class RadioForm(FlaskForm):
     type = RadioField('Who are u?', coerce=str, choices=[('1', 'User'), ('2', 'Administrator')], default='1',
                       validators=[DataRequired()])
     submit = SubmitField('Submit')
+
+
+class Search(FlaskForm):
+    city = StringField('Город', validators=[DataRequired()])
+    street = StringField('Улица', validators=[DataRequired()])
+    house = FloatField('Дом', validators=[DataRequired()])
+    submit = SubmitField('Submit')
