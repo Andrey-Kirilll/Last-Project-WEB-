@@ -153,7 +153,7 @@ def find_business(ll, spn, request, locale="ru_RU"):
         return orgs[0]
 
 
-def main(organ, address):
+def main(organ, address, count):
     toponym_to_find = address
 
     if not toponym_to_find:
@@ -163,10 +163,10 @@ def main(organ, address):
     lat, lon = get_coordinates(toponym_to_find)
     address_ll = f"{lat},{lon}"
 
-    # Подбираем масштаб, чтобы получить минимум n организаций.
-    delta = 0.01
+    # Подбираем масштаб, чтобы получить минимум count организаций.
+    delta = 0.001
     organizations = []
-    while delta < 100 and len(organizations) < 6:
+    while delta < 100 and len(organizations) < count:
         delta *= 2.0
         span = f"{delta},{delta}"
         organizations = find_businesses(address_ll, span, organ)
@@ -194,4 +194,4 @@ def main(organ, address):
 
 
 if __name__ == "__main__":
-    main('аптека', 'Псков ПТЛ')
+    main('магнит', 'Псков Рокоссовского 34', 2)

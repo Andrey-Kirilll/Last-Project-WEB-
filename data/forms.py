@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, PasswordField, BooleanField, RadioField, SelectMultipleField, FloatField
+from wtforms import SubmitField, StringField, PasswordField, BooleanField, RadioField,\
+    SelectMultipleField, SelectField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired
 
@@ -63,3 +64,16 @@ class AdminProfileForm(FlaskForm):
     street = StringField('Введите название улицы', validators=[DataRequired()])
     house = StringField('Введите номер дома', validators=[DataRequired()])
     submit = SubmitField('Сохранить')
+
+
+class SearchForm(FlaskForm):
+    business = SelectField('Тип организации', validators=[DataRequired()], coerce=str,
+                           choices=[('Продуктовый', 'Продуктовый'), ('Аптека', 'Аптека')])
+    store = SelectField('Наименование организации', validators=[DataRequired()], coerce=str,
+                        choices=[('Пятёрочка', 'Пятёрочка'), ('Магнит', 'Магнит'),
+                                 ('Будь здоров', 'Будь здоров'), ('Аптека-А', 'Аптека-А')])
+    city = StringField('Город', validators=[DataRequired()])
+    street = StringField('Улица', validators=[DataRequired()])
+    house = StringField('Дом', validators=[DataRequired()])
+    submit = SubmitField('Подтвердить')
+

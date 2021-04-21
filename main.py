@@ -2,11 +2,13 @@ from flask import Flask, make_response, jsonify, render_template, request
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.utils import redirect
 from data.models import People, Works
-from data.forms import RegistrationForm, LoginForm, AddWork, RadioForm, UserProfileForm, AdminProfileForm, DeleteButton, \
-    ChangePasswordForm
+from data.forms import RegistrationForm, LoginForm, AddWork, RadioForm, UserProfileForm, AdminProfileForm,\
+    DeleteButton, ChangePasswordForm, SearchForm
 from werkzeug.security import generate_password_hash
 from data import db_session
 from data import search
+from data.stores import form_basket
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -94,49 +96,36 @@ def not_found(_):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
-@app.route('/')
+@app.route('/', methods=['POST', 'GET'])
 def index():
-    db_sess = db_session.create_session()
-    sp = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
-          'Продуктовый': ['Пятёрочка', 'Магнит']}
-    organs = ['Аптека', 'Продуктовый']
-    names_of_organs = sp[organs[0]]  # Названия выбранного типа организации
-    address = 'Псков ПТЛ'
-    search.main(organs[0], address)  # Путь до изображения карты НЕ УБИРАТЬ ВЫЗОВ ФУНКЦИИ!!!
-    params = {
-        'organs': organs,
-        'address': address,
-        'names_of_organs': names_of_organs
-    }
-    return render_template('content.html', **params)
+    form = SearchForm()
+    if form.validate_on_submit():
+        city = form.city.data
+        street = form.street.data
+        house = form.house.data
+        business = form.business.data
+        store = form.store.data
+        number = request.form.get('number')
 
+        print(number)
 
-@app.route('/table')
-def load_table():
-    store1 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
-              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
-                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'],
-                         ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
-    store2 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 15',
-              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
-                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'],
-                         ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
-    stores = [store1, store2]
+        # db_sess = db_session.create_session()
 
-    db_sess = db_session.create_session()
-    sp = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
-          'Продуктовый': ['Пятёрочка', 'Магнит']}
-    organs = ['Аптека', 'Продуктовый']
-    names_of_organs = sp[organs[0]]  # Названия выбранного типа организации
-    address = 'Псков ПТЛ'
-    search.main(organs[0], address)  # Путь до изображения карты НЕ УБИРАТЬ ВЫЗОВ ФУНКЦИИ!!!
-    params = {
-        'organs': organs,
-        'address': address,
-        'names_of_organs': names_of_organs,
-        "stores": stores
-    }
-    return render_template('content.html', **params)
+        stores = form_basket()  # Создаём таблицу товаров магазинов согласно запросу
+        equalities = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
+                      'Продуктовый': ['Пятёрочка', 'Магнит']}
+        organs = ['Аптека', 'Продуктовый']
+        address = ' '.join([city, street, house])
+        search.main(store, address, int(number))  # Путь до изображения карты НЕ УБИРАТЬ ВЫЗОВ ФУНКЦИИ!!!
+        params = {
+            'address': address,
+            'stores': stores,
+            'equalities': equalities
+        }
+
+        return render_template('content.html', **params, title=f'{store} в {city} рядом с вами', form=form)
+
+    return render_template('content.html', title=f'Найдите нужную организацию прямо сейчас!', form=form)
 
 
 @app.route('/registration', methods=['GET', 'POST'])
