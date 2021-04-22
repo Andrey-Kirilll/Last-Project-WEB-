@@ -1,10 +1,8 @@
-import pygame
-import requests
-import sys
-import os
+from requests import get
+from sys import exit
 
 
-def show_map(ll_spn=None, map_type="map", add_params=None, size=(600, 450)):
+def show_map(ll_spn=None, map_type="map", add_params=None):
     if ll_spn:
         map_request = f"http://static-maps.yandex.ru/1.x/?{ll_spn}&l={map_type}"
     else:
@@ -12,13 +10,13 @@ def show_map(ll_spn=None, map_type="map", add_params=None, size=(600, 450)):
 
     if add_params:
         map_request += "&" + add_params
-    response = requests.get(map_request)
+    response = get(map_request)
 
     if not response:
         print("Ошибка выполнения запроса:")
         print(map_request)
         print("Http статус:", response.status_code, "(", response.reason, ")")
-        sys.exit(1)
+        exit(1)
 
     # Запишем полученное изображение в файл.
     map_file = 'static/img/map.png'
@@ -28,30 +26,15 @@ def show_map(ll_spn=None, map_type="map", add_params=None, size=(600, 450)):
         file.close()
     except IOError as ex:
         print("Ошибка записи временного файла:", ex)
-        sys.exit(2)
+        exit(2)
 
     return map_file
-
-    # Инициализируем pygame
-    pygame.init()
-    screen = pygame.display.set_mode(size)
-    # Рисуем картинку, загружаемую из только что созданного файла.
-    screen.blit(pygame.image.load(map_file), (0, 0))
-    # Переключаем экран и ждем закрытия окна.
-    pygame.display.flip()
-    while pygame.event.wait().type != pygame.QUIT:
-        pass
-
-    pygame.quit()
-    # Удаляем за собой файл с изображением.
-    os.remove(map_file)
 
 
 def find_businesses(ll, spn, request, locale="ru_RU"):
     search_api_server = "https://search-maps.yandex.ru/v1/"
-    api_key = "dda3ddba-c9ea-4ead-9010-f43fbc15c6e3"  # вставить api_key
     search_params = {
-        "apikey": api_key,
+        "apikey": "dda3ddba-c9ea-4ead-9010-f43fbc15c6e3",
         "text": request,
         "lang": locale,
         "ll": ll,
@@ -59,7 +42,7 @@ def find_businesses(ll, spn, request, locale="ru_RU"):
         "type": "biz"
     }
 
-    response = requests.get(search_api_server, params=search_params)
+    response = get(search_api_server, params=search_params)
     if not response:
         raise RuntimeError(
             f"""Ошибка выполнения запроса:
@@ -74,19 +57,16 @@ def find_businesses(ll, spn, request, locale="ru_RU"):
     return organizations
 
 
-API_KEY = '40d1649f-0493-4b70-98ba-98533de7710b'
-
-
 def geocode(address):
     # Собираем запрос для геокодера.
     geocoder_request = f"http://geocode-maps.yandex.ru/1.x/"
     geocoder_params = {
-        "apikey": API_KEY,
+        "apikey": '40d1649f-0493-4b70-98ba-98533de7710b',
         "geocode": address,
         "format": "json"}
 
     # Выполняем запрос.
-    response = requests.get(geocoder_request, params=geocoder_params)
+    response = get(geocoder_request, params=geocoder_params)
 
     if response:
         # Преобразуем ответ в json-объект
@@ -120,7 +100,7 @@ def get_coordinates(address):
 def get_ll_span(address):
     toponym = geocode(address)
     if not toponym:
-        return (None, None)
+        return None, None
 
     # Координаты центра топонима:
     toponym_coodrinates = toponym["Point"]["pos"]
