@@ -34,13 +34,9 @@
     </p>
     {% endfor %}
 
-    <p>{{ form.submit(type="submit", class="btn btn-primary", value="Сохранить") }}</p>
-    {{ message }}
-</form>
-<form action="" method="post">
-    {{ form1.hidden_tag() }}
-    {{ form1.csrf_token }}
-    <p>{{ form1.delete(type="submit", class="btn btn-danger", value="Удалить текущего пользователя") }}</p>
+    <p>{{ form.save(type="submit", class="btn btn-primary") }}
+       {{ form.delete(type="submit", class="btn btn-danger") }}
+    </p>
     {{ message }}
 </form>
 
