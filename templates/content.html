@@ -1,0 +1,107 @@
+{% extends "main.html" %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<form action="" method="post" onsubmit="return true" oninput="level.value = number.valueAsNumber">
+    <div class="container-xxl">
+    {{ form.csrf_token }}
+    <div class="row">
+        <div class="col-sm" >
+            {{form.business(class="form-select") }}
+        {% for error in form.business.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+        </div>
+
+        <div class="col-sm" >
+            {{form.store(class="form-select") }}
+        {% for error in form.store.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+        </div>
+
+        <div class="col-sm">
+                <label for="customRange3" class="form-label">Минимальное количество организаций для поиска: <output for="customRange3" name="level">4</output></label>
+                <input type="range" class="form-range" min="0" max="8" value="4" step="1" id="customRange3" name="number">
+        </div>
+    </div>
+
+    <div class="container-xxl">
+      <div class="row">
+        <div id="city" class="col-sm" >
+            {{form.city(class="form-control", placeholder="Город") }}
+            {% for error in form.city.errors %}
+                <p class="alert alert-danger" role="alert">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+      </div>
+      <div class="row">
+        <div id="street" class="col-sm" >
+            {{form.street(class="form-control", placeholder="Улица") }}
+            {% for error in form.street.errors %}
+                <p class="alert alert-danger" role="alert">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+      </div>
+      <div class="row">
+          <div id="house" class="col-sm" >
+                {{form.house(class="form-control", placeholder="Дом") }}
+                {% for error in form.house.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </div>
+      </div>
+      <div class="row">
+          <div id="button" class="col-sm" >
+            {{ form.submit(type="submit", class="btn btn-primary", role="button") }}
+          </div>
+      </div>
+    </div>
+
+    {% if stores %}
+    <img id="map" src="../static/img/map.png" alt="Расположение ближайших организаций" />
+      {% for store in stores %}
+        <h3>{{store["name"]}}, по адрессу: {{store["address"]}}</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">№</th>
+              <th scope="col">Категория</th>
+              <th scope="col">Товар</th>
+              <th scope="col">Цена</th>
+              <th scope="col">Количество</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for item in store["items"] %}
+            {% set category = item[0] %}
+            {% set loop1 = loop.index %}
+            {% for product in item[1:] %}
+                <tr>
+                  <th scope="row">{{ loop1 }}.{{ loop.index }}</th>
+                  <td>{{ category }}</td>
+                  <td>{{ product[0] }}</td>
+                  <td>{{ product[1] }}</td>
+                  <td>{{ product[2] }}</td>
+                </tr>
+            {% endfor %}
+          {% endfor %}
+          </tbody>
+        </table>
+      {% endfor %}
+    {% endif %}
+
+
+</form>
+{% endblock %}
