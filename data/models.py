@@ -44,8 +44,6 @@ class Works(SqlAlchemyBase):
     store_address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     store_name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
 
-    #resources = orm.relationship('all_items', back_populates='administrator')
-
     @property
     def serialize(self):
         return {
@@ -65,8 +63,16 @@ class Resources(SqlAlchemyBase, SerializerMixin):
     price = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)  # цена товара
     count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)  # количество товара
     store = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # магазин, где находится товар
-    store_address = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # адрес товара
-    #administrator_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("administrators.id"), nullable=True)
+    store_address = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # адрес магазина
     created_datetime = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
 
-    #administrator = orm.relationship('Administrator', back_populates='resources')
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'appellation': self.appellation,
+            'type': self.type,
+            'price': self.price,
+            'count': self.count,
+            'date': self.created_datetime
+        }

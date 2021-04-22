@@ -30,7 +30,7 @@
                             <li><a class="dropdown-item" href="/logout">Выход</a></li>
                             <li><a class="dropdown-item" href="/profile">Мой профиль</a></li>
                             <li><a class="dropdown-item" href="/change_password">Сменить пароль</a></li>
-                            <li><a class="'dropdown-item" href="/add_item">Добавить продукт в список</a></li>
+                            <li><a class="dropdown-item" href="/items">Товары</a></li>
                           </ul>
                         {% endif %}
                       </div>
@@ -75,6 +75,12 @@
           {% endblock %}
 
           {% block change_password %}
+          {% endblock %}
+
+          {% block table_items %}
+          {% endblock %}
+
+          {% block item %}
           {% endblock %}
 
         </main>
