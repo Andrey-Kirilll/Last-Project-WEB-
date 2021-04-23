@@ -35,8 +35,14 @@
     </p>
     {% endfor %}
 
-    <p>
-       {{ form.business.label }} {{form.business(rows=3, multiple=True) }}
+    <select name="business" class="form-select form-select-lg mb-3">
+        <option>{{ buss }}</option>
+        {% for name in ["Пятёрочка", "Магнит", "Будь Здоров"] %}
+            {% if name != buss %}
+                <option>{{ name }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
         {% for error in form.business.errors %}
     <p class="alert alert-danger" role="alert">
         {{ error }}
@@ -73,13 +79,9 @@
         {{ error }}
     </p>
     {% endfor %}
-    <p>{{ form.submit(type="submit", class="btn btn-primary", value="Сохранить") }}</p>
+    <p>{{ form.save(type="submit", class="btn btn-primary") }}
+       {{ form.delete(type="submit", class="btn btn-danger") }}
+    </p>
     {{message}}
-</form>
-    <form action="" method="post">
-    {{ form1.hidden_tag() }}
-    {{ form1.csrf_token }}
-    <p>{{ form1.delete(type="submit", class="btn btn-danger", value="Удалить текущего пользователя") }}</p>
-    {{ message }}
 </form>
 {% endblock %}

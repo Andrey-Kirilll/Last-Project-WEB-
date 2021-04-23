@@ -1,0 +1,62 @@
+{% extends "main.html" %}
+
+{% block table_items %}
+
+<h1>{{ title }}</h1>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+    <p>{{ form.add_btn(type="submit", class="btn btn-primary") }}
+       {{ form.dlt_btn(type="submit", class="btn btn-danger") }}
+       {{ form.ed_btn(type="submit", class="btn btn-primary") }}
+    </p>
+    <p>
+        {{ form.id_field.label }}<br>
+        {{ form.id_field(class="form-control") }}<br>
+        {% for error in form.id_field.errors %}
+    <p class="alert alert-danger" role="alert">
+        {{ error }}
+    </p>
+    {% endfor %}
+    {{ message }}
+       <select  name="sort" class="form-select form-select-lg mb-3">
+           <option>{{ sort }}</option>
+           {% for var in ['Отсортировать по id', 'Отсортировать по цене', 'Отсортировать по количеству на складе', 'Отсортировать по названию'] %}
+               {% if var != sort %}
+                   <option>{{ var }}</option>
+               {% endif %}
+           {% endfor %}
+       </select>
+        {% for error in form.sort.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    <p>{{ form.sort_btn(type="submit", class="btn btn-primary") }}</p>
+</form>
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Название</th>
+            <th scope="col">Тип</th>
+            <th scope="col">Цена</th>
+            <th scope="col">Количество</th>
+            <th scope="col">Дата и время редактирования</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(count) %}
+            <tr>
+                <th scope="row">{{ info[i]['id'] }}</th>
+                <td>{{ info[i]['appellation'] }}</td>
+                <td>{{ info[i]['type'] }}</td>
+                <td>{{ info[i]['price'] }}</td>
+                <td>{{ info[i]['count'] }}</td>
+                <td>{{ info[i]['date'] }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

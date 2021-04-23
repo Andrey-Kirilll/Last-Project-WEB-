@@ -1,0 +1,30 @@
+{% extends "main.html" %}
+
+{% block accounts %}
+<h1>{{ title }}</h1>
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Email</th>
+            <th scope="col">Фамилия</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Роль</th>
+            <th scope="col">Дата регистрации</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(count) %}
+            <tr>
+                <th scope="row">{{ info[i]['id'] }}</th>
+                <td>{{ info[i]['email'] }}</td>
+                <td>{{ info[i]['surname'] }}</td>
+                <td>{{ info[i]['name'] }}</td>
+                <td>{{ info[i]['role'] }}</td>
+                <td>{{ info[i]['created_date'] }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

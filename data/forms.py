@@ -1,11 +1,17 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, PasswordField, BooleanField, RadioField,\
-    SelectMultipleField, SelectField
+from wtforms import SubmitField, StringField, PasswordField, BooleanField, RadioField, SelectMultipleField, \
+    IntegerField, validators, FloatField, SelectField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired
 
 
-class RegistrationForm(FlaskForm):
+class RadioForm(FlaskForm):  # класс формы для выбора между юзером, админом или модератором
+    type = RadioField('Кто вы?', coerce=str, choices=[('1', 'User'), ('2', 'Administrator'), ('3', 'Moderator')],
+                      default='1', validators=[DataRequired()])
+    submit = SubmitField('Подтвердить')
+
+
+class RegistrationForm(FlaskForm):  # начальная форма регистрации(полная для юзера, каркас для админа)
     email = EmailField('Адрес электронной почты', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     password_again = PasswordField('Повторите пароль', validators=[DataRequired()])
@@ -14,59 +20,59 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Подтвердить')
 
 
-class LoginForm(FlaskForm):
+class AddWork(RegistrationForm):  # форма для регистрации админов
+    business = SelectField('Выберите название организации', validators=[DataRequired()], coerce=str,
+                           choices=[('Пятёрочка', 'Пятёрочка'), ('Магнит', 'Магнит'),
+                                    ('Будь Здоров', 'Будь Здоров')])
+    city = StringField('Введите название города', validators=[DataRequired()])
+    street = StringField('Введите название улицы', validators=[DataRequired()])
+    house = StringField('Введите номер дома', validators=[DataRequired()])
+
+
+class ModeratorRegistration(FlaskForm):  # форма регистрации модератора
+    email = EmailField('Адрес электронной почты', validators=[DataRequired()])
+    access_key = PasswordField('Укажите выданный Вам ключ доступа', validators=[DataRequired()])
+    surname = StringField('Фамилия', validators=[DataRequired()])
+    name = StringField('Имя', validators=[DataRequired()])
+    submit = SubmitField('Подтвердить')
+
+
+class LoginForm(FlaskForm):  # форма входа в аккаунт
     email = EmailField('Адрес электронной почты', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
     submit = SubmitField('Продолжить')
 
 
-class AddWork(RegistrationForm):
-    business = SelectMultipleField('Выберите название организации', validators=[DataRequired()], coerce=str,
-                                   choices=[('Пятёрочка', 'Пятёрочка'), ('Магнит', 'Магнит'),
-                                            ('Будь Здоров', 'Будь Здоров')])
-    city = StringField('Введите название города', validators=[DataRequired()])
-    street = StringField('Введите название улицы', validators=[DataRequired()])
-    house = StringField('Введите номер дома', validators=[DataRequired()])
-
-
-class RadioForm(FlaskForm):
-    type = RadioField('Кто вы?', coerce=str, choices=[('1', 'User'), ('2', 'Administrator')], default='1',
-                      validators=[DataRequired()])
-    submit = SubmitField('Подтвердить')
-
-
-class UserProfileForm(FlaskForm):
+class UserProfileForm(FlaskForm):  # форма для просмота профиля юзера
     email = EmailField('Адрес электронной почты', validators=[DataRequired()])
     surname = StringField('Фамилия', validators=[DataRequired()])
     name = StringField('Имя', validators=[DataRequired()])
-    submit = SubmitField('Сохранить')
+    save = SubmitField('Сохранить')
+    delete = SubmitField('Удалить аккаунт')
 
 
-class DeleteButton(FlaskForm):
-    delete = SubmitField('Удалить текущего пользователя')
+class AdminProfileForm(FlaskForm):  # форма для просмота профиля админа
+    email = EmailField('Адрес электронной почты', validators=[DataRequired()])
+    surname = StringField('Фамилия', validators=[DataRequired()])
+    name = StringField('Имя', validators=[DataRequired()])
+    business = SelectField('Выберите тип организации', validators=[DataRequired()], coerce=str,
+                           choices=[('Пятёрочка', 'Пятёрочка'), ('Магнит', 'Магнит'),
+                                    ('Будь Здоров', 'Будь Здоров')])
+    city = StringField('Введите название города', validators=[DataRequired()])
+    street = StringField('Введите название улицы', validators=[DataRequired()])
+    house = StringField('Введите номер дома', validators=[DataRequired()])
+    save = SubmitField('Сохранить')
+    delete = SubmitField('Удалить аккаунт')
 
 
-class ChangePasswordForm(FlaskForm):
-    new_password = StringField('Введите новый пароль')
-    new_password_again = StringField('Повторите пароль')
+class ChangePasswordForm(FlaskForm):  # форма для изменения пароля
+    new_password = StringField('Введите новый пароль', validators=[DataRequired()])
+    new_password_again = StringField('Повторите пароль', validators=[DataRequired()])
     button = SubmitField('Подтвердить')
 
 
-class AdminProfileForm(FlaskForm):
-    email = EmailField('Адрес электронной почты', validators=[DataRequired()])
-    surname = StringField('Фамилия', validators=[DataRequired()])
-    name = StringField('Имя', validators=[DataRequired()])
-    business = SelectMultipleField('Выберите тип организации', validators=[DataRequired()], coerce=str,
-                                   choices=[('Пятёрочка', 'Пятёрочка'), ('Магнит', 'Магнит'),
-                                            ('Будь Здоров', 'Будь Здоров')])
-    city = StringField('Введите название города', validators=[DataRequired()])
-    street = StringField('Введите название улицы', validators=[DataRequired()])
-    house = StringField('Введите номер дома', validators=[DataRequired()])
-    submit = SubmitField('Сохранить')
-
-
-class SearchForm(FlaskForm):
+class SearchForm(FlaskForm):  # форма для поиска магазинов рядом
     business = SelectField('Тип организации', validators=[DataRequired()], coerce=str,
                            choices=[('Продуктовый', 'Продуктовый'), ('Аптека', 'Аптека')])
     store = SelectField('Наименование организации', validators=[DataRequired()], coerce=str,
@@ -77,3 +83,22 @@ class SearchForm(FlaskForm):
     house = StringField('Дом', validators=[DataRequired()])
     submit = SubmitField('Подтвердить')
 
+
+class ButtonsForm(FlaskForm):   # форма, которая юзается для добавления товара админом
+    add_btn = SubmitField('Добавить товар')
+    dlt_btn = SubmitField('Удалить товар по id')
+    ed_btn = SubmitField('Редактировать товар по id')
+    sort = SelectField(validators=[DataRequired()], coerce=str,
+                       choices=[('Отсортировать по id', ''), ('Отсортировать по цене', ''),
+                                ('Отсортировать по количеству на складе', ''),
+                                ('Отсортировать по названию', '')])
+    sort_btn = SubmitField('Отсортировать')
+    id_field = IntegerField('Введите id товара', [validators.NumberRange(min=0)], default=0)
+
+
+class ItemForm(FlaskForm):  # форма показа сведений о конкретном товаре либо его добавлении
+    appellation = StringField('Название товара', validators=[DataRequired()])
+    type = StringField('Тип товара', validators=[DataRequired()])
+    price = FloatField('Цена товара', validators=[DataRequired()])
+    count = IntegerField('Количество на складе', validators=[DataRequired()])
+    save = SubmitField('Сохранить')

@@ -53,8 +53,12 @@
     </p>
     {% endfor %}
 
-    <p>
-       {{ form.business.label }} {{form.business(rows=3, multiple=True) }}
+    <select name="business" class="form-select form-select-lg mb-3">
+        <option>{{ form.business.label }}</option>
+        <option>Пятёрочка</option>
+        <option>Магнит</option>
+        <option>Будь Здоров</option>
+    </select>
         {% for error in form.business.errors %}
     <p class="alert alert-danger" role="alert">
         {{ error }}

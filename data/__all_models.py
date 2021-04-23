@@ -1,1 +1,1 @@
-from .models import People
+from .models import People, Resources, Works
