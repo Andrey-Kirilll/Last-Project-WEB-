@@ -25,12 +25,18 @@
                             <li><a class="dropdown-item" href="/profile">Мой профиль</a></li>
                             <li><a class="dropdown-item" href="/change_password">Сменить пароль</a></li>
                           </ul>
-                        {% else %}
+                        {% elif current_user.role == "Admin" %}
                           <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             <li><a class="dropdown-item" href="/logout">Выход</a></li>
                             <li><a class="dropdown-item" href="/profile">Мой профиль</a></li>
                             <li><a class="dropdown-item" href="/change_password">Сменить пароль</a></li>
                             <li><a class="dropdown-item" href="/items">Товары</a></li>
+                          </ul>
+                        {% else %}
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <li><a class="dropdown-item" href="/logout">Выход</a></li>
+                            <li><a class="dropdown-item" href="/all_accounts">Все аккаунты в таблице</a></li>
+                            <li><a class="dropdown-item" href="/api/scopes">Правила пользования api для модератора</a></li>
                           </ul>
                         {% endif %}
                       </div>
@@ -81,6 +87,12 @@
           {% endblock %}
 
           {% block item %}
+          {% endblock %}
+
+          {% block moder_reg %}
+          {% endblock %}
+
+          {% block accounts %}
           {% endblock %}
 
         </main>
