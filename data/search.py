@@ -2,7 +2,7 @@ from requests import get
 from sys import exit
 
 
-def show_map(ll_spn=None, map_type="map", add_params=None):
+def show_map(ll_spn=None, map_type="map", add_params=None, orgs_addresses=None):
     if ll_spn:
         map_request = f"http://static-maps.yandex.ru/1.x/?{ll_spn}&l={map_type}"
     else:
@@ -28,7 +28,7 @@ def show_map(ll_spn=None, map_type="map", add_params=None):
         print("Ошибка записи временного файла:", ex)
         exit(2)
 
-    return map_file
+    return orgs_addresses
 
 
 def find_businesses(ll, spn, request, locale="ru_RU"):
@@ -144,7 +144,7 @@ def main(organ, address, count):
     address_ll = f"{lat},{lon}"
 
     # Подбираем масштаб, чтобы получить минимум count организаций.
-    delta = 0.001
+    delta = 0.01
     organizations = []
     while delta < 100 and len(organizations) < count:
         delta *= 2.0
@@ -153,24 +153,29 @@ def main(organ, address, count):
 
     # Формируем список из координат организаций и их круглосуточности
     organs_with_time = []
+    orgs_addresses = []
+    n = 1
     for org in organizations:
         point = org["geometry"]["coordinates"]
         hours = org["properties"]["CompanyMetaData"].get("Hours", None)
+        org_address = org["properties"]["description"]
         if hours:  # У организации есть данные о времени работы
             available = hours["Availabilities"][0]
             is_24x7 = available.get("Everyday", False) and available.get("TwentyFourHours", False)
         else:  # Данных о времени работы нет.
             is_24x7 = None
         # Запоминаем полученные данные.
-        organs_with_time.append((point, is_24x7))
+        organs_with_time.append((point, is_24x7, n))
+        orgs_addresses.append(org_address)
+        n += 1
 
     # Формируем параметр с точками
     points_param = "pt=" + "~".join([
-        f'{point[0]},{point[1]},pm2{"gn" if is_24x7 else ("lb" if not is_24x7 else "gr")}l'
-        for point, is_24x7 in organs_with_time])
+        f'{point[0]},{point[1]},pm2{"gn" if is_24x7 else ("lb" if not is_24x7 else "gr")}m{number}'
+        for point, is_24x7, number in organs_with_time])
 
     # Используем автопозиционирование карты по всем меткам.
-    return show_map(map_type="map", add_params=points_param)
+    return show_map(map_type="map", add_params=points_param, orgs_addresses=orgs_addresses)
 
 
 if __name__ == "__main__":

@@ -74,7 +74,7 @@
     {% if stores %}
     <img id="map" src="../static/img/map.png" alt="Расположение ближайших организаций" />
       {% for store in stores %}
-        <h3>{{store["name"]}}, по адрессу: {{store["address"]}}</h3>
+        <h3>{{store["name"]}}, по адрессу: {{store["address"]}} (На карте: {{ store["number"] }})</h3>
         <table class="table">
           <thead>
             <tr>

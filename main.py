@@ -66,12 +66,12 @@ def index():
 
         # db_sess = db_session.create_session()
 
-        stores = form_basket()  # Создаём таблицу товаров магазинов согласно запросу
         equalities = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
                       'Продуктовый': ['Пятёрочка', 'Магнит']}
         organs = ['Аптека', 'Продуктовый']
         address = ' '.join([city, street, house])
-        search.main(store, address, int(number))  # Путь до изображения карты НЕ УБИРАТЬ ВЫЗОВ ФУНКЦИИ!!!
+        orgs_addresses = search.main(store, address, int(number))  # список адресов
+        stores = form_basket(orgs_addresses)  # Создаём таблицу товаров магазинов согласно запросу
         params = {
             'address': address,
             'stores': stores,
@@ -84,6 +84,7 @@ def index():
 
 
 @app.route('/table')
+@login_required
 def load_table():
     store1 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
               'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
@@ -167,7 +168,7 @@ def admin_registration():
         work = Works(  # привязываем к админу место его работы через айдишник
             id=int(db_sess.query(People.id).filter(People.email == form.email.data).first()[0]),
             store_name=request.form.get('business'),
-            store_address=', '.join([form.city.data, form.street.data, str(form.house.data).split('.')[0]])
+            store_address=', '.join([form.city.data, form.street.data, form.house.data])
         )
         db_sess.add(work)
         db_sess.commit()
@@ -224,7 +225,7 @@ def on_profile():
                 db_sess.query(Works).filter(Works.id == current_user.id).update({
                     "store_name": request.form.get('business'),
                     "store_address": ', '.join([form.city.data, form.street.data,
-                                                str(form.house.data).split('.')[0]])})
+                                                form.house.data])})
                 db_sess.commit()
                 return redirect('/')
             else:
