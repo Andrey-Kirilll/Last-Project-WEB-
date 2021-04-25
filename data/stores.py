@@ -8,7 +8,7 @@ def modify_adr(adr):
     return ', '.join([city, street, house])
 
 
-def form_basket(addresses):
+def form_basket(addresses, store_name):
     done_addresses = []
     labels = ['ул.', 'просп.', 'д.']
     for item in addresses:
@@ -35,23 +35,23 @@ def form_basket(addresses):
     db_sess = db_session.create_session()
     n = 0
     for store_adr in store_adrs:  # Адрес магазина, где мы ищем товары
-        print(store_adr)
         n += 1  # Обновляем номер отметки на карте
         db = db_sess.query(Resources).filter_by(store_address=store_adr).all()
-        print(db)
+        basket = dict()
         if db:
             for i in range(len(db)):
                 item = db[i].store_basket
-                if i == 0:
-                    basket = {'store': item['store'], 'address': modify_adr(item['address']), 'number': str(n),
-                              'items': {
-                                  f'{item["type"]}': [[item['name'], item['price'], item['count']]]
-                              }}
-                else:
-                    if item['type'] in basket['items']:
-                        basket['items'][item['type']].append([item['name'], item['price'], item['count']])
+                if item['store'] == store_name:
+                    if not basket:
+                        basket = {'store': item['store'], 'address': modify_adr(item['address']), 'number': str(n),
+                                  'items': {
+                                      f'{item["type"]}': [[item['name'], item['price'], item['count']]]
+                                  }}
                     else:
-                        basket['items'][item['type']] = [[item['name'], item['price'], item['count']]]
+                        if item['type'] in basket['items']:
+                            basket['items'][item['type']].append([item['name'], item['price'], item['count']])
+                        else:
+                            basket['items'][item['type']] = [[item['name'], item['price'], item['count']]]
         else:
             basket = {
                 'number': str(n),

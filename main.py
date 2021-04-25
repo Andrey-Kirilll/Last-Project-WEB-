@@ -58,25 +58,27 @@ def index():
         city = form.city.data
         street = form.street.data
         house = form.house.data
-        business = form.business.data
         store = form.store.data
         number = request.form.get('number')
 
-        # db_sess = db_session.create_session()
-
         equalities = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
-                      'Продуктовый': ['Пятёрочка', 'Магнит']}
-        organs = ['Аптека', 'Продуктовый']
+                      'Продуктовый': ['Пятёрочка', 'Магнит']}  # на будущее, для сортировки магазинов по категориям
         address = ' '.join([city, street, house])
-        orgs_addresses = search.main(store, address, int(number))  # список адресов
-        stores = form_basket(orgs_addresses)  # Создаём таблицу товаров магазинов согласно запросу
-        params = {
-            'address': address,
-            'stores': stores,
-            'equalities': equalities,
-            'default_store': store
-        }
-        print(params['stores'])
+        orgs_addresses, map_numb = search.main(store, address, int(number))  # список адресов
+        if orgs_addresses and map_numb:
+            stores = form_basket(orgs_addresses, store)  # Создаём таблицу товаров магазинов согласно запросу
+            params = {
+                'address': address,
+                'stores': stores,
+                'equalities': equalities,
+                'default_store': store,
+                'img': f'map{map_numb}.png'
+            }
+        else:
+            params = {
+                'title': f'Вы ввели неизвестный адрес, попробуйте ещё раз :)\n({address})'
+            }
+            return render_template('content.html', **params, form=form)
 
         return render_template('content.html', **params, title=f'{store} в {city} рядом с вами', form=form)
 

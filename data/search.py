@@ -1,5 +1,6 @@
 from requests import get
 from sys import exit
+import os
 
 
 def show_map(ll_spn=None, map_type="map", add_params=None, orgs_addresses=None):
@@ -18,17 +19,31 @@ def show_map(ll_spn=None, map_type="map", add_params=None, orgs_addresses=None):
         print("Http статус:", response.status_code, "(", response.reason, ")")
         exit(1)
 
-    # Запишем полученное изображение в файл.
-    map_file = 'static/img/map.png'
+    # Запишем полученное изображение в файл, предварительно удалив.
+    n = None
+    files = os.listdir(path="static/img")
+    for i in files:
+        if i.startswith('map') and i.endswith('.png'):
+            n = int(i[i.index('p') + 1: i.index('.')])
+            map_file = f'static/img/map{n}.png'
+            if os.path.exists(map_file):
+                os.remove(map_file.replace('/', '\\'))
+    if n is None:
+        n = 0
+    if n < 1000:
+        new_n = n + 1
+    else:
+        new_n = 1
+    new_map_file = f'static/img/map{new_n}.png'
     try:
-        with open(map_file, "wb") as file:
+        with open(new_map_file, "wb") as file:
             file.write(response.content)
         file.close()
     except IOError as ex:
         print("Ошибка записи временного файла:", ex)
         exit(2)
 
-    return orgs_addresses
+    return orgs_addresses, new_n
 
 
 def find_businesses(ll, spn, request, locale="ru_RU"):
@@ -141,6 +156,8 @@ def main(organ, address, count):
         exit(1)
 
     lat, lon = get_coordinates(toponym_to_find)
+    if lat is None or lon is None:
+        return None, None
     address_ll = f"{lat},{lon}"
 
     # Подбираем масштаб, чтобы получить минимум count организаций.
