@@ -1,18 +1,21 @@
 import datetime
 from flask_restful import abort
-from data.permissions_checker import who_are_you
 from flask import Flask, make_response, jsonify, render_template, request
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.utils import redirect
 from data.models import People, Works, Resources
 from data.forms import RegistrationForm, LoginForm, AddWork, RadioForm, UserProfileForm, AdminProfileForm, \
-    ChangePasswordForm, ButtonsForm, ItemForm, SearchForm, ModeratorRegistration
+    ChangePasswordForm, ButtonsForm, ItemForm, SearchForm
 from werkzeug.security import generate_password_hash
 from data import db_session, search, api
 from data.stores import form_basket
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
+app.config["JSON_AS_ASCII"] = False
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['EXPLAIN_TEMPLATE_LOADING'] = True
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -28,17 +31,21 @@ def load_user(user_email):
 
 @app.errorhandler(404)  # перехват ошибки о ненайденной странице
 def not_found(_):
-    return make_response(jsonify({'error': 'Not found'}), 404)
+    return make_response(jsonify({'error': 'Страничка не найдена'}), 404)
 
 
-@app.errorhandler(403)
+@app.errorhandler(403)  # перехват ошибки о недостаточности полномочий
 def no_access(_):
-    return make_response(jsonify({'error': 'YOU HAVE NOT ACCESS TO OPEN THIS PAGE. PLEASE LOGIN WITH ENOUGH'
-                                           ' PERMISSIONS'}))
+    return make_response(jsonify({'error': 'У вас нет прав доступа к этой странице'}))
+
+
+@app.errorhandler(401)
+def unauthorized(_):
+    return make_response(jsonify({'error': 'Вы не авторизованы'}))
 
 
 @app.route('/logout')  # выход из аккаунта
-#@login_required
+@login_required
 def logout():
     logout_user()
     return redirect('/')
@@ -76,28 +83,33 @@ def index():
     return render_template('content.html', title=f'Найдите нужную организацию прямо сейчас!', form=form)
 
 
-# @app.route('/table')
-# #@login_required
-# def load_table():
-#     store1 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
-#               'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
-#                         ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'],
-#                          ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
-#     stores = [store1]
-#
-#     sp = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
-#           'Продуктовый': ['Пятёрочка', 'Магнит']}
-#     organs = ['Аптека', 'Продуктовый']
-#     names_of_organs = sp[organs[0]]  # Названия выбранного типа организации
-#     address = 'Псков ПТЛ'
-#     search.main(organs[0], address)  # Путь до изображения карты НЕ УБИРАТЬ ВЫЗОВ ФУНКЦИИ!!!
-#     params = {
-#         'organs': organs,
-#         'address': address,
-#         'names_of_organs': names_of_organs,
-#         "stores": stores
-#     }
-#     return render_template('content.html', **params)
+@app.route('/table')
+@login_required
+def load_table():
+    store1 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
+              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
+                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'],
+                         ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
+    store2 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 15',
+              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
+                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'],
+                         ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
+    stores = [store1, store2]
+
+    sp = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
+          'Продуктовый': ['Пятёрочка', 'Магнит']}
+    organs = ['Аптека', 'Продуктовый']
+    names_of_organs = sp[organs[0]]  # Названия выбранного типа организации
+    address = 'Псков ПТЛ'
+    search.main(organs[0], address)  # Путь до изображения карты НЕ УБИРАТЬ ВЫЗОВ ФУНКЦИИ!!!
+    params = {
+        'organs': organs,
+        'address': address,
+        'names_of_organs': names_of_organs,
+        "stores": stores
+    }
+    return render_template('content.html', **params)
+>>>>>>> 1e708a909fcc8fdde020fe4c7939297924de6caf
 
 
 @app.route('/registration', methods=['GET', 'POST'])  # выбор роли для нового аккаунта
@@ -108,8 +120,6 @@ def registration():
             return redirect('/user_registration')
         elif form.type.data == '2':
             return redirect('/admin_registration')
-        else:
-            return redirect('/moder_registration')
     return render_template('radio.html', title='Кто Вы?', form=form)
 
 
@@ -156,12 +166,12 @@ def admin_registration():
         admin.set_password(form.password.data)
         db_sess.add(admin)  # добавляем в базу и комиттим
         db_sess.commit()
-        work = Works(  # привязываем к админу место его работы через айдишник
+        work = Works( # привязываем к админу место его работы через айдишник
             id=int(db_sess.query(People.id).filter(People.email == form.email.data).first()[0]),
             store_name=request.form.get('business'),
             store_address=', '.join([form.city.data.lower().strip(),
-                                    form.street.data.lower().strip(),
-                                    str(form.house.data).lower().strip().split('.')[0]])
+                                     form.street.data.lower().strip(),
+                                     str(form.house.data).lower().strip().split('.')[0]])
         )
         db_sess.add(work)
         db_sess.commit()
@@ -170,54 +180,21 @@ def admin_registration():
     return render_template('admin_registration.html', title='Регистрация', form=form)  # рендерим форму регистрации
 
 
-@app.route('/moder_registration', methods=['GET', 'POST'])
-def moder_reg():
-    form = ModeratorRegistration()
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        if db_sess.query(People).filter(People.role == 'Moderator').first():
-            return render_template('moder_reg.html', title='Войти как модератор', form=form,
-                                   message='Модератор уже есть')
-        if form.access_key.data != 'yandex_lyceum_project':
-            return render_template('moder_reg.html', title='Войти как модератор', form=form, message='Инвалидный'
-                                                                                                     ' ключ доступа')
-        moder = People(
-            name=form.name.data,
-            surname=form.surname.data,
-            email=form.email.data,
-            role='Moderator'
-        )
-        moder.set_password(form.access_key.data)
-        db_sess.add(moder)
-        db_sess.commit()
-        return redirect('/')
-    return render_template('moder_reg.html', title='Войти как модератор', form=form)
-
-
 @app.route('/login', methods=['GET', 'POST'])  # вход в аккаунт
 def login():
     form = LoginForm()
     if form.validate_on_submit():  # нажата ли кнопка ?
         db_sess = db_session.create_session()
-        role = db_sess.query(People.role).filter(People.email == form.email.data).all()
         human = db_sess.query(People).filter(People.email == form.email.data).first()  # ищем аккаунт в дб
-        if role:
-            role = role[0][0]
-            if human and human.check_password(form.password.data) and role != 'Moderator':  # есть ли аккаунт и
-                # совпадают ли пароли?так же надо убедиться что это не модератор, для него другая проверка
-                login_user(human, remember=form.remember_me.data)
-                return redirect("/")
-            elif human and form.password.data == 'yandex_lyceum_project' and role == 'Moderator':
-                login_user(human, remember=form.remember_me.data)
-                return redirect("/")
-            return render_template('login.html', message="Неверный логин или пароль", form=form)
-        else:
-            pass
+        if human and human.check_password(form.password.data):  # есть ли аккаунт и совпадают ли пароли?
+            login_user(human, remember=form.remember_me.data)
+            return redirect("/")
+        return render_template('login.html', message="Неверный логин или пароль", form=form)
     return render_template('login.html', title='Авторизация', form=form)  # рендерим форму регистрации
 
 
 @app.route('/profile', methods=['GET', 'POST'])  # открыть профиль
-#@login_required
+@login_required
 def on_profile():
     if who_are_you() == 'usr' or who_are_you() == 'adm':
         db_sess = db_session.create_session()
@@ -277,30 +254,83 @@ def on_profile():
             return render_template('lets see admin profile.html', form=form, title='Редактирование профиля',
                                    buss=work['store_name'])
     abort(403)
+    db_sess = db_session.create_session()
+    info = db_sess.query(People).filter_by(email=current_user.email)  # ищем в дб информацию о текущем аккаунте
+    info = [x.serialize for x in info.all()][0]  # переведом query() запрос в нужный нам вид (список словарей)
+    if info['role'] == 'User':  # ты кто - админ или юзер?
+        form = UserProfileForm()
+        if form.validate_on_submit():  # кнопку нажали?
+            if 'save' in [i for i in request.form]:  # это была кнопка сохранить?
+                db_sess.query(People).filter(People.email == current_user.email). \
+                    update({"email": form.email.data,
+                            "surname": form.surname.data,
+                            "name": form.name.data})
+                db_sess.commit()
+                return redirect('/')
+            else:  # если это не кнопка сохранить
+                db_sess.query(People).filter(People.email == current_user.email).delete()
+                db_sess.commit()
+                return redirect('/')
+        form.email.data = info['email']  # устанавливаем значения полей, предварительно получив их из дб
+        form.surname.data = info['surname']
+        form.name.data = info['name']
+        return render_template('lets see user profile.html', form=form, title='Редактирование профиля')
+    else:  # смысл тот же что и выше
+        form = AdminProfileForm()
+        if form.validate_on_submit():
+            if 'save' in [i for i in request.form]:
+                db_sess.query(People).filter(People.email == current_user.email).update(
+                    {"email": form.email.data,
+                     "surname": form.surname.data,
+                     "name": form.name.data})
+                db_sess.query(Works).filter(Works.id == current_user.id).update({
+                    "store_name": request.form.get('business'),
+                    "store_address": ', '.join([form.city.data, form.street.data,
+                                                form.house.data])})
+                db_sess.commit()
+                return redirect('/')
+            else:
+                db_sess.query(Works).filter(Works.id == current_user.id).delete()
+                db_sess.query(People).filter(People.email == current_user.email).delete()
+                db_sess.commit()
+                return redirect('/')
+
+        work = db_sess.query(Works).filter_by(id=current_user.id)
+        work = [x.serialize for x in work.all()][0]
+        form.email.data = info['email']
+        form.surname.data = info['surname']
+        form.name.data = info['name']
+        form.business.data = work['store_name']
+        address = work['store_address'].split(', ')
+        form.city.data = address[0]
+        form.street.data = address[1]
+        form.house.data = address[2]
+
+        return render_template('lets see admin profile.html', form=form, title='Редактирование профиля',
+                               buss=work['store_name'])
+>>>>>>> 1e708a909fcc8fdde020fe4c7939297924de6caf
 
 
 @app.route('/change_password', methods=['GET', 'POST'])  # меняет пароль на новый для авторизованного аккаунта
-#@login_required
+@login_required
 def change_password():
-    if who_are_you() == 'adm' or who_are_you() == 'usr':
-        form = ChangePasswordForm()
-        if form.validate_on_submit():
-            db_sess = db_session.create_session()
-            if form.new_password.data != form.new_password_again.data:  # новые пароли совпадают?
-                return render_template('change_password.html', title='Смена пароля', form=form,
-                                       message="Пароли не совпадают")
-            db_sess.query(People).filter(People.email == current_user.email). \
-                update({'hashed_password': generate_password_hash(form.new_password.data)})
-            db_sess.commit()  # обновляем данные в дб и коммитим
-            return redirect('/')
-        return render_template('change_password.html', title='Смена пароля', form=form)
-    abort(403)
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        if form.new_password.data != form.new_password_again.data:  # новые пароли совпадают?
+            return render_template('change_password.html', title='Смена пароля', form=form,
+                                   message="Пароли не совпадают")
+        db_sess.query(People).filter(People.email == current_user.email). \
+            update({'hashed_password': generate_password_hash(form.new_password.data)})
+        db_sess.commit()  # обновляем данные в дб и коммитим
+        return redirect('/')
+    return render_template('change_password.html', title='Смена пароля', form=form)
 
 
 @app.route('/items', methods=['GET', 'POST'])  # показывает админу текущие товары на его месте работы в виде таблички
-#@login_required
+@login_required
 def show_items():
-    if who_are_you() == 'adm':
+    if current_user.role == 'Admin':
         sort_by = 'Отсортировать по id'  # значение по умолчанию для сортировки
         db_sess = db_session.create_session()
         work_info = db_sess.query(Works.store_name, Works.store_address).filter(Works.id == current_user.id).all()
@@ -355,9 +385,9 @@ def show_items():
 
 
 @app.route('/add_item', methods=['GET', 'POST'])  # добавить новый товар
-#@login_required
+@login_required
 def add_item():
-    if who_are_you() == 'adm':
+    if current_user.role == 'Admin':
         form = ItemForm()
         db_sess = db_session.create_session()
         if form.validate_on_submit():  # кнопку нажали?
@@ -380,9 +410,9 @@ def add_item():
 
 
 @app.route('/edit_item', methods=['GET', 'POST'])  # редактирование существующего товара
-#@login_required
+@login_required
 def edit_item():
-    if who_are_you() == 'adm':
+    if current_user.role == 'Admin':
         form = ItemForm()
         db_sess = db_session.create_session()
         global id_
@@ -402,17 +432,6 @@ def edit_item():
             form.price.data = resource['price']
             form.count.data = resource['count']
         return render_template('item.html', form=form, title='Редактирование товара')
-    abort(403)
-
-
-@app.route('/all_accounts', methods=['GET', 'POST'])
-#@login_required
-def show_accounts():
-    if who_are_you() == 'mdr':
-        db_sess = db_session.create_session()
-        all_acc_s = db_sess.query(People).filter(People.role != 'Moderator')
-        all_acc_s = [x.serialize for x in all_acc_s.all()]
-        return render_template('acc_s.html', count=len(all_acc_s), info=all_acc_s, title='Таблица аккаунтов')
     abort(403)
 
 

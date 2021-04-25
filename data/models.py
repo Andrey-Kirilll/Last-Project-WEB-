@@ -35,7 +35,7 @@ class People(UserMixin, SerializerMixin, SqlAlchemyBase):
         }
 
 
-class Works(SqlAlchemyBase):
+class Works(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'works'  # имя таблицы
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, unique=True)  # id админа

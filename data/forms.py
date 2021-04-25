@@ -1,12 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, PasswordField, BooleanField, RadioField, SelectMultipleField, \
+from wtforms import SubmitField, StringField, PasswordField, BooleanField, RadioField, \
     IntegerField, validators, FloatField, SelectField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired
 
 
 class RadioForm(FlaskForm):  # класс формы для выбора между юзером, админом или модератором
-    type = RadioField('Кто вы?', coerce=str, choices=[('1', 'User'), ('2', 'Administrator'), ('3', 'Moderator')],
+    type = RadioField('Кто вы?', coerce=str, choices=[('1', 'User'), ('2', 'Administrator')],
                       default='1', validators=[DataRequired()])
     submit = SubmitField('Подтвердить')
 
@@ -27,14 +27,6 @@ class AddWork(RegistrationForm):  # форма для регистрации а�
     city = StringField('Введите название города', validators=[DataRequired()])
     street = StringField('Введите название улицы', validators=[DataRequired()])
     house = StringField('Введите номер дома', validators=[DataRequired()])
-
-
-class ModeratorRegistration(FlaskForm):  # форма регистрации модератора
-    email = EmailField('Адрес электронной почты', validators=[DataRequired()])
-    access_key = PasswordField('Укажите выданный Вам ключ доступа', validators=[DataRequired()])
-    surname = StringField('Фамилия', validators=[DataRequired()])
-    name = StringField('Имя', validators=[DataRequired()])
-    submit = SubmitField('Подтвердить')
 
 
 class LoginForm(FlaskForm):  # форма входа в аккаунт
