@@ -1,7 +1,7 @@
 from pprint import pprint
 from requests import get
 
-url = 'http://127.0.0.1:5000'
+url = 'https://lastproject45234.herokuapp.com/'
 token = 'yandex_lyceum_project'
 login = 'x@a'
 
