@@ -26,8 +26,8 @@ def show_map(ll_spn=None, map_type="map", add_params=None, orgs_addresses=None):
         if i.startswith('map') and i.endswith('.png'):
             n = int(i[i.index('p') + 1: i.index('.')])
             map_file = f'static/img/map{n}.png'
-            if os.path.exists(map_file):
-                os.remove(map_file.replace('/', '\\'))
+            #if os.path.exists(map_file):
+                #os.remove(map_file.replace('/', '\\'))
     if n is None:
         n = 0
     if n < 1000:
