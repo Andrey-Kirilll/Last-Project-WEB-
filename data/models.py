@@ -55,7 +55,7 @@ class Resources(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'all_items'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)  # id товара
-    appellation = sqlalchemy.Column(sqlalchemy.String, nullable=True, unique=True)  # наименование товара
+    appellation = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # наименование товара
     type = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # категория товара
     price = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)  # цена товара
     count = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)  # количество товара
