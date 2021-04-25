@@ -74,7 +74,8 @@
     {% if stores %}
     <img id="map" src="../static/img/map.png" alt="Расположение ближайших организаций" />
       {% for store in stores %}
-        <h3>{{store["name"]}}, по адрессу: {{store["address"]}} (На карте: {{ store["number"] }})</h3>
+        {% if "store" in store.keys() %}
+        <h3>{{store["store"]}}, по адрессу: {{store["address"]}} (На карте: {{ store["number"] }})</h3>
         <table class="table">
           <thead>
             <tr>
@@ -86,10 +87,9 @@
             </tr>
           </thead>
           <tbody>
-          {% for item in store["items"] %}
-            {% set category = item[0] %}
+           {% for category in store["items"].keys() %}
             {% set loop1 = loop.index %}
-            {% for product in item[1:] %}
+            {% for product in store["items"][category] %}
                 <tr>
                   <th scope="row">{{ loop1 }}.{{ loop.index }}</th>
                   <td>{{ category }}</td>
@@ -101,6 +101,10 @@
           {% endfor %}
           </tbody>
         </table>
+        {% else %}
+        <h3>Информация об организации {{ default_store }}, по адрессу: {{store["address"]}} отсутствует (На карте: {{ store["number"] }})</h3>
+        <br>
+      {% endif %}
       {% endfor %}
     {% endif %}
 

@@ -62,8 +62,6 @@ def index():
         store = form.store.data
         number = request.form.get('number')
 
-        print(number)
-
         # db_sess = db_session.create_session()
 
         equalities = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
@@ -75,40 +73,14 @@ def index():
         params = {
             'address': address,
             'stores': stores,
-            'equalities': equalities
+            'equalities': equalities,
+            'default_store': store
         }
+        print(params['stores'])
 
         return render_template('content.html', **params, title=f'{store} в {city} рядом с вами', form=form)
 
     return render_template('content.html', title=f'Найдите нужную организацию прямо сейчас!', form=form)
-
-
-@app.route('/table')
-@login_required
-def load_table():
-    store1 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 32',
-              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
-                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'],
-                         ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
-    store2 = {'name': 'Пятёрочка', 'address': 'Псков, Рокоссовского, 15',
-              'items': [['напитки', ['Coca-Cola', '120', '86'], ['Pepsi', '98', '34'], ['Ряженка', '45', '23']],
-                        ['выпечка', ['Хлеб Бородино', '39', '15'], ['Ватрушка', '42', '40'],
-                         ['Булка сдобная', '26', '7'], ['Багет французский', '64', '3']]]}
-    stores = [store1, store2]
-
-    sp = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
-          'Продуктовый': ['Пятёрочка', 'Магнит']}
-    organs = ['Аптека', 'Продуктовый']
-    names_of_organs = sp[organs[0]]  # Названия выбранного типа организации
-    address = 'Псков ПТЛ'
-    search.main(organs[0], address)  # Путь до изображения карты НЕ УБИРАТЬ ВЫЗОВ ФУНКЦИИ!!!
-    params = {
-        'organs': organs,
-        'address': address,
-        'names_of_organs': names_of_organs,
-        "stores": stores
-    }
-    return render_template('content.html', **params)
 
 
 @app.route('/registration', methods=['GET', 'POST'])  # выбор роли для нового аккаунта
@@ -168,7 +140,9 @@ def admin_registration():
         work = Works(  # привязываем к админу место его работы через айдишник
             id=int(db_sess.query(People.id).filter(People.email == form.email.data).first()[0]),
             store_name=request.form.get('business'),
-            store_address=', '.join([form.city.data, form.street.data, form.house.data])
+            store_address=', '.join([form.city.data.lower().strip(),
+                                     form.street.data.lower().strip(),
+                                     str(form.house.data).lower().strip().split('.')[0]])
         )
         db_sess.add(work)
         db_sess.commit()
@@ -224,8 +198,8 @@ def on_profile():
                      "name": form.name.data})
                 db_sess.query(Works).filter(Works.id == current_user.id).update({
                     "store_name": request.form.get('business'),
-                    "store_address": ', '.join([form.city.data, form.street.data,
-                                                form.house.data])})
+                    "store_address": ', '.join([form.city.data.lower().strip(), form.street.data.lower().strip(),
+                                                str(form.house.data).lower().strip().split('.')[0]])})
                 db_sess.commit()
                 return redirect('/')
             else:

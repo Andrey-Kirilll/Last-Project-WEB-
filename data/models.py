@@ -78,10 +78,10 @@ class Resources(SqlAlchemyBase, SerializerMixin):
     @property  # функция со спец.декоратором для удобного представления данных об объекте модели из query() запроса
     def store_basket(self):
         return {
-            'id': self.id,
-            'appellation': self.appellation,
+            'store': self.store,
+            'address': self.store_address,
+            'name': self.appellation,
             'type': self.type,
             'price': self.price,
-            'count': self.count,
-            'date': self.created_datetime
+            'count': self.count
         }
