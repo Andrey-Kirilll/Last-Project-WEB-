@@ -1,6 +1,5 @@
 from requests import get
 from sys import exit
-import os
 
 
 def show_map(ll_spn=None, map_type="map", add_params=None, orgs_addresses=None):
@@ -20,21 +19,7 @@ def show_map(ll_spn=None, map_type="map", add_params=None, orgs_addresses=None):
         exit(1)
 
     # Запишем полученное изображение в файл, предварительно удалив.
-    n = None
-    files = os.listdir(path="static/img")
-    for i in files:
-        if i.startswith('map') and i.endswith('.png'):
-            n = int(i[i.index('p') + 1: i.index('.')])
-            map_file = f'static/img/map{n}.png'
-            #if os.path.exists(map_file):
-                #os.remove(map_file.replace('/', '\\'))
-    if n is None:
-        n = 0
-    if n < 1000:
-        new_n = n + 1
-    else:
-        new_n = 1
-    new_map_file = f'static/img/map{new_n}.png'
+    new_map_file = f'static/img/map1.png'
     try:
         with open(new_map_file, "wb") as file:
             file.write(response.content)
@@ -43,7 +28,7 @@ def show_map(ll_spn=None, map_type="map", add_params=None, orgs_addresses=None):
         print("Ошибка записи временного файла:", ex)
         exit(2)
 
-    return orgs_addresses, new_n
+    return orgs_addresses
 
 
 def find_businesses(ll, spn, request, locale="ru_RU"):
@@ -193,7 +178,3 @@ def main(organ, address, count):
 
     # Используем автопозиционирование карты по всем меткам.
     return show_map(map_type="map", add_params=points_param, orgs_addresses=orgs_addresses)
-
-
-if __name__ == "__main__":
-    main('магнит', 'Псков Рокоссовского 34', 2)

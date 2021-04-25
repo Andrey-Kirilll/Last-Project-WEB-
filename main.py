@@ -1,6 +1,6 @@
 import datetime
 import os
-
+from random import randint
 from flask_restful import abort
 from flask import Flask, make_response, jsonify, render_template, request
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
@@ -66,15 +66,16 @@ def index():
         equalities = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
                       'Продуктовый': ['Пятёрочка', 'Магнит']}  # на будущее, для сортировки магазинов по категориям
         address = ' '.join([city, street, house])
-        orgs_addresses, map_numb = search.main(store, address, int(number))  # список адресов
-        if orgs_addresses and map_numb:
+        orgs_addresses = search.main(store, address, int(number))  # список адресов
+        if orgs_addresses:
             stores = form_basket(orgs_addresses, store)  # Создаём таблицу товаров магазинов согласно запросу
             params = {
                 'address': address,
                 'stores': stores,
                 'equalities': equalities,
                 'default_store': store,
-                'img': f'map{map_numb}.png'
+                'img': f'map1.png',
+                'ver': f'{randint(0, 10324324939)}'
             }
         else:
             params = {
@@ -133,6 +134,12 @@ def admin_registration():
         if db_sess.query(People).filter(People.email == form.email.data).first():  # уникален ли логин?
             return render_template('admin_registration.html', title='Регистрация', form=form,
                                    message="К этому адресу уже привязан аккаунт")
+        if db_sess.query(Works).filter(Works.store_address == ', '.join([form.city.data.lower().strip(),
+                                                                         form.street.data.lower().strip(),
+                                                                         str(form.house.data).lower().strip().split(
+                                                                             '.')[0]])).first():
+            return render_template('admin_registration.html', title='Регистрация', form=form,
+                                   message="У этого магазина уже есть администратор")
         admin = People(  # собираем объект аккаунта
             name=form.name.data,
             surname=form.surname.data,
