@@ -1,6 +1,4 @@
 import datetime
-import os
-from random import randint
 from flask_restful import abort
 from flask import Flask, make_response, jsonify, render_template, request
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
@@ -66,16 +64,15 @@ def index():
         equalities = {'Аптека': ['Будь здоров!', 'Аптека-А'],  # список наименований конкретных организаций данного типа
                       'Продуктовый': ['Пятёрочка', 'Магнит']}  # на будущее, для сортировки магазинов по категориям
         address = ' '.join([city, street, house])
-        orgs_addresses = search.main(store, address, int(number))  # список адресов
-        if orgs_addresses:
+        orgs_addresses, map_numb = search.main(store, address, int(number))  # список адресов
+        if orgs_addresses and map_numb:
             stores = form_basket(orgs_addresses, store)  # Создаём таблицу товаров магазинов согласно запросу
             params = {
                 'address': address,
                 'stores': stores,
                 'equalities': equalities,
                 'default_store': store,
-                'img': f'map1.png',
-                'ver': f'{randint(0, 10324324939)}'
+                'img': f'map{map_numb}.png'
             }
         else:
             params = {
@@ -361,5 +358,4 @@ def edit_item():
 if __name__ == '__main__':
     db_session.global_init("db/search_system.db")  # инициилизация дб
     app.register_blueprint(api.blueprint)
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run()

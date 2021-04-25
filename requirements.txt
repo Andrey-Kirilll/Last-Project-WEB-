@@ -1,9 +1,0 @@
-flask
-flask_restful
-flask_login
-werkzeug
-sqlalchemy
-wtforms
-flask_wtf
-sqlalchemy_serializer
-requests
